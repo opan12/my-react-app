@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function AdminLogin() {
+function UserLogin() {
   const [loginData, setLoginData] = useState({ username: "", password: "" });
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("https://localhost:7185/api/Admin/adminlogin", {
+      const res = await fetch("https://localhost:7185/api/Token/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -17,9 +17,9 @@ function AdminLogin() {
       });
 
       if (res.ok) {
-        localStorage.setItem("role", "Admin");
+        localStorage.setItem("role", "User");
         setMessage("Giriş başarılı!");
-        navigate("/adminhub");
+        navigate("/userhub");
       } else {
         const err = await res.text();
         setMessage("Giriş başarısız: " + err);
@@ -31,7 +31,7 @@ function AdminLogin() {
 
   return (
     <div>
-      <h2>Admin Giriş</h2>
+      <h2>Kullanıcı Girişi</h2>
       <form onSubmit={handleLogin}>
         <input
           type="text"
@@ -54,4 +54,4 @@ function AdminLogin() {
   );
 }
 
-export default AdminLogin;
+export default UserLogin;

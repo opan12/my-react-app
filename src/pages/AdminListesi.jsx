@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import * as signalR from "@microsoft/signalr";
 
 const AdminListesi = () => {
   const [musteriler, setMusteriler] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchData = () => {
     axios
       .get("https://localhost:7185/api/Admin/musteriliste")
       .then((response) => {
@@ -16,6 +17,27 @@ const AdminListesi = () => {
         console.error("Veri alınırken hata oluştu:", error);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchData();
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7185/notificationHub") // Hub url'ini doğru yaz
+      .withAutomaticReconnect()
+      .build();
+
+    connection.start()
+      .then(() => console.log("SignalR bağlantısı kuruldu"))
+      .catch((e) => console.log("SignalR bağlantı hatası:", e));
+
+    connection.on("VeriGuncellendi", () => {
+      fetchData(); // Veri güncellendiğinde tekrar yükle
+    });
+
+    return () => {
+      connection.stop();
+    };
   }, []);
 
   return (
@@ -24,7 +46,11 @@ const AdminListesi = () => {
       {loading ? (
         <p>Yükleniyor...</p>
       ) : (
-        <table border="1" cellPadding="10" style={{ borderCollapse: "collapse", width: "100%" }}>
+        <table
+          border="1"
+          cellPadding="10"
+          style={{ borderCollapse: "collapse", width: "100%" }}
+        >
           <thead>
             <tr>
               <th>Müşteri No</th>
